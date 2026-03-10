@@ -4,6 +4,12 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import os
+import time
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 # Enable CORS for Flutter Web
@@ -47,11 +53,19 @@ def fetch_news():
 def scrape_links(source_url):
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        logger.info(f"FETCH: Starting scrape_links for {source_url}")
+        start_time = time.time()
         response = requests.get(source_url, headers=headers, timeout=30)
+        fetch_time = time.time() - start_time
+        logger.info(f"FETCH: Request took {fetch_time:.2f}s for {source_url}")
+        
         if response.status_code == 200:
-            # Let requests detect the correct encoding (important for Turkish sites)
             response.encoding = response.apparent_encoding
-            soup = BeautifulSoup(response.text, 'html.parser')
+            parse_start = time.time()
+            soup = BeautifulSoup(response.text, 'lxml')
+            parse_time = time.time() - parse_start
+            logger.info(f"FETCH: Parsing took {parse_time:.2f}s for {source_url}")
+            
             links = []
             for a in soup.find_all('a', href=True):
                 href = a['href']
@@ -59,7 +73,7 @@ def scrape_links(source_url):
                     continue
                 
                 # Improved heuristic for news articles
-                is_junk = any(word in href.lower() for word in ['facebook', 'twitter', 'instagram', 'linkedin', 'about', 'contact', 'privacy', 'terms', 'signup', 'login', 'reklam', 'kunye', 'bize-ulasin'])
+                is_junk = any(word in href.lower() for word in ['facebook', 'twitter', 'instagram', 'linkedin', 'about', 'contact', 'privacy', 'terms', 'signup', 'login', 'reklam', 'kunye', 'bize-ulasin', 'cerez', 'politikasi'])
                 if is_junk:
                     continue
                 
@@ -79,19 +93,26 @@ def scrape_links(source_url):
                         links.append(full_url)
                 if len(links) >= 15: # Fetch more links to filter successfully later
                     break
+            
+            total_time = time.time() - start_time
+            logger.info(f"FETCH: Total scrape_links took {total_time:.2f}s for {source_url}")
             return links
     except Exception as e:
-        print(f"Scrape Links Error: {e}")
+        logger.error(f"Scrape Links Error: {e}")
     return []
 
 def scrape_details(article_url, category):
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        logger.info(f"DETAILS: Starting scrape_details for {article_url}")
+        start_time = time.time()
         response = requests.get(article_url, headers=headers, timeout=30)
+        fetch_time = time.time() - start_time
+        
         if response.status_code == 200:
-            # Let requests detect the correct encoding (important for Turkish sites)
             response.encoding = response.apparent_encoding
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = BeautifulSoup(response.text, 'lxml')
+            logger.info(f"DETAILS: Fetch+Parse took {time.time() - start_time:.2f}s")
             
             # Better title extraction
             title = get_meta(soup, 'og:title') or get_meta(soup, 'twitter:title')
@@ -113,7 +134,7 @@ def scrape_details(article_url, category):
                 "category": category
             }
     except Exception as e:
-        print(f"Scrape Details Error: {e}")
+        logger.error(f"Scrape Details Error: {e}")
     return None
 
 def get_meta(soup, property_name):
