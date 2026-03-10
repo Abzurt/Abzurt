@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "518157188019",
+    "project_id": "abzurt-news",
+    "storage_bucket": "abzurt-news.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:518157188019:android:3c64c309440e43aef069c6",
+        "android_client_info": {
+          "package_name": "com.abzurt.abzurt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCggmYzj2s1XdaUybJTMB8dr3bY1Fl1ZKk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

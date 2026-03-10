@@ -1,0 +1,54 @@
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "venv",
+        ".git",
+        "firebase-debug.log",
+        "firebase-export-*.log"
+      ],
+      "runtime": "python311"
+    }
+  ],
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "abzurt-news",
+          "appId": "1:518157188019:android:3c64c309440e43aef069c6",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "abzurt-news",
+          "appId": "1:518157188019:ios:91d53907a05797d4f069c6",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "abzurt-news",
+          "appId": "1:518157188019:ios:91d53907a05797d4f069c6",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "abzurt-news",
+          "configurations": {
+            "android": "1:518157188019:android:3c64c309440e43aef069c6",
+            "ios": "1:518157188019:ios:91d53907a05797d4f069c6",
+            "macos": "1:518157188019:ios:91d53907a05797d4f069c6",
+            "web": "1:518157188019:web:3540769225e3db8ef069c6",
+            "windows": "1:518157188019:web:18e7901ee693daedf069c6"
+          }
+        }
+      }
+    }
+  }
+}
