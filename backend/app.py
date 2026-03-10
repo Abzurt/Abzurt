@@ -49,6 +49,8 @@ def scrape_links(source_url):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
         response = requests.get(source_url, headers=headers, timeout=10)
         if response.status_code == 200:
+            # Let requests detect the correct encoding (important for Turkish sites)
+            response.encoding = response.apparent_encoding
             soup = BeautifulSoup(response.text, 'html.parser')
             links = []
             for a in soup.find_all('a', href=True):
@@ -75,8 +77,8 @@ def scrape_details(article_url, category):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
         response = requests.get(article_url, headers=headers, timeout=10)
         if response.status_code == 200:
-            # Force UTF-8 encoding for Turkish characters
-            response.encoding = 'utf-8'
+            # Let requests detect the correct encoding (important for Turkish sites)
+            response.encoding = response.apparent_encoding
             soup = BeautifulSoup(response.text, 'html.parser')
             
             # Better title extraction
