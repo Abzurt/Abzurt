@@ -75,15 +75,25 @@ def scrape_details(article_url, category):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
         response = requests.get(article_url, headers=headers, timeout=10)
         if response.status_code == 200:
+            # Force UTF-8 encoding for Turkish characters
+            response.encoding = 'utf-8'
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            title = get_meta(soup, 'og:title') or (soup.find('h1').get_text(strip=True) if soup.find('h1') else "Başlıksız")
-            content = get_meta(soup, 'og:description') or get_meta(soup, 'description') or (soup.find('p').get_text(strip=True) if soup.find('p') else "İçerik çekilemedi.")
-            image_url = get_meta(soup, 'og:image') or ""
+            # Better title extraction
+            title = get_meta(soup, 'og:title') or get_meta(soup, 'twitter:title')
+            if not title or title.lower() in ['tr_tr', 'article', 'website']:
+                title = soup.find('h1').get_text(strip=True) if soup.find('h1') else "Başlıksız"
+            
+            # Better content extraction
+            content = get_meta(soup, 'og:description') or get_meta(soup, 'description') or get_meta(soup, 'twitter:description')
+            if not content or content.lower() in ['tr_tr']:
+                content = soup.find('p').get_text(strip=True) if soup.find('p') else "İçerik çekilemedi."
+            
+            image_url = get_meta(soup, 'og:image') or get_meta(soup, 'twitter:image') or ""
             
             return {
-                "title": title,
-                "content": content,
+                "title": title.strip(),
+                "content": content.strip()[:300] + ("..." if len(content.strip()) > 300 else ""),
                 "imageUrl": image_url,
                 "sourceUrl": article_url,
                 "category": category
