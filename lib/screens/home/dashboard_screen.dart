@@ -53,13 +53,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
 
           if (newsProvider.newsList.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            return RefreshIndicator(
+              onRefresh: () => newsProvider.refreshFeed(),
+              color: const Color(0xFF8743F4),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  Icon(Icons.newspaper, size: 64, color: Colors.white.withOpacity(0.1)),
-                  const SizedBox(height: 16),
-                  const Text('Henüz haber yok.', style: TextStyle(color: Colors.white38)),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          newsProvider.errorMessage != null ? Icons.error_outline : Icons.newspaper_outlined, 
+                          size: 64, 
+                          color: newsProvider.errorMessage != null ? Colors.redAccent.withOpacity(0.2) : Colors.white.withOpacity(0.1)
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          newsProvider.errorMessage ?? 'Henüz haber yok.', 
+                          style: TextStyle(color: newsProvider.errorMessage != null ? Colors.redAccent : Colors.white38, fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () => newsProvider.refreshFeed(),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Şimdi Yenile'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF8743F4).withOpacity(0.1),
+                            foregroundColor: const Color(0xFF8743F4),
+                          ),
+                        ),
+                        const Text('\n(Veya aşağı kaydırarak yenile)', 
+                          style: TextStyle(color: Colors.white10, fontSize: 11)),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             );

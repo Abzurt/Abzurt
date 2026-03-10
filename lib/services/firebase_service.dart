@@ -51,6 +51,16 @@ class FirebaseService {
     });
   }
 
+  /// Deletes a news source for a specific user
+  Future<void> deleteSource(String userId, String sourceId) async {
+    await _db
+        .collection('users')
+        .doc(userId)
+        .collection('sources')
+        .doc(sourceId)
+        .delete();
+  }
+
   /// Fetches all sources for a specific user
   Future<List<SourceModel>> getSources(String userId) async {
     var snapshot = await _db

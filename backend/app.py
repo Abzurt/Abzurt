@@ -47,7 +47,7 @@ def fetch_news():
 def scrape_links(source_url):
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
-        response = requests.get(source_url, headers=headers, timeout=10)
+        response = requests.get(source_url, headers=headers, timeout=30)
         if response.status_code == 200:
             # Let requests detect the correct encoding (important for Turkish sites)
             response.encoding = response.apparent_encoding
@@ -58,14 +58,26 @@ def scrape_links(source_url):
                 if len(href) < 5 or href.startswith(('#', 'javascript:')):
                     continue
                 
-                # Heuristic for news articles
-                is_likely_article = any(char.isdigit() for char in href) or "SXHBQ" in href
+                # Improved heuristic for news articles
+                is_junk = any(word in href.lower() for word in ['facebook', 'twitter', 'instagram', 'linkedin', 'about', 'contact', 'privacy', 'terms', 'signup', 'login', 'reklam', 'kunye', 'bize-ulasin'])
+                if is_junk:
+                    continue
+                
+                # Check path depth or common news patterns
+                path = href.split('?')[0]
+                depth = path.strip('/').count('/')
+                
+                # Heuristic: Articles usually have depth > 0 (not a main section) 
+                # and either contain digits OR have significant slug length
+                is_likely_article = (depth >= 1 and len(path) > 20) or \
+                                   any(char.isdigit() for char in href) or \
+                                   any(marker in href.lower() for marker in ['haber', 'detay', 'article', 'post', 'news', 'sx'])
                 
                 if is_likely_article:
                     full_url = urljoin(source_url, href)
                     if full_url not in links:
                         links.append(full_url)
-                if len(links) >= 10:
+                if len(links) >= 15: # Fetch more links to filter successfully later
                     break
             return links
     except Exception as e:
@@ -75,7 +87,7 @@ def scrape_links(source_url):
 def scrape_details(article_url, category):
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
-        response = requests.get(article_url, headers=headers, timeout=10)
+        response = requests.get(article_url, headers=headers, timeout=30)
         if response.status_code == 200:
             # Let requests detect the correct encoding (important for Turkish sites)
             response.encoding = response.apparent_encoding

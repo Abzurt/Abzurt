@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'signup_screen.dart';
 import 'package:provider/provider.dart';
 import '../../services/firebase_service.dart';
+import '../../services/news_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,6 +25,8 @@ class _LoginState extends State<LoginScreen> {
       
       if (userCredential != null) {
         if (mounted) {
+          // Set user ID in provider before navigating
+          Provider.of<NewsProvider>(context, listen: false).setUserId(userCredential.user!.uid);
           await Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
         }
       }
@@ -204,7 +207,10 @@ class _LoginState extends State<LoginScreen> {
                   const SizedBox(height: 32),
                   // Login Button
                   ElevatedButton(
-                    onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
+                    onPressed: () {
+                      Provider.of<NewsProvider>(context, listen: false).setUserId('guest_user');
+                      Navigator.pushReplacementNamed(context, '/home');
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF8743F4),
                       foregroundColor: Colors.white,

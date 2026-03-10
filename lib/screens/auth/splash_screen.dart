@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../../services/news_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,6 +14,26 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  bool _isCheckingAuth = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      if (mounted) {
+        // Set user ID and move to home
+        context.read<NewsProvider>().setUserId(user.uid);
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } else {
+      if (mounted) setState(() => _isCheckingAuth = false);
+    }
+  }
 
   final List<Map<String, String>> _onboardingData = [
     {
@@ -34,6 +57,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isCheckingAuth) {
+        return const Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(child: CircularProgressIndicator(color: Color(0xFF8743F4))),
+        );
+    }
+
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,

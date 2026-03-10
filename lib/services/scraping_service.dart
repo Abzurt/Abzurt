@@ -7,8 +7,22 @@ class ScrapingService {
   // Example: https://abzurt-news.onrender.com/fetch
   final String _backendUrl = 'https://abzurt-backend.onrender.com/fetch';
 
+  /// Pings the backend to wake it up (Render free tier)
+  Future<void> ping() async {
+    try {
+      await http.get(Uri.parse(_backendUrl.replaceFirst('/fetch', '/health')))
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {}
+  }
+
+  /// Validates a news source by checking if it returns any links
+  Future<bool> validateSource(String url) async {
+    final links = await fetchArticleLinks(url);
+    return links.isNotEmpty;
+  }
+
   /// Fetches the last 10 article links from a listing page via Backend
-  Future<List<String>> fetchArticleLinks(String sourceUrl) async {
+    final stopwatch = Stopwatch()..start();
     try {
       final response = await http.post(
         Uri.parse(_backendUrl),
@@ -17,14 +31,15 @@ class ScrapingService {
           'action': 'links',
           'url': sourceUrl,
         }),
-      );
+      ).timeout(const Duration(seconds: 60));
 
+      print('SUCCESS: fetchArticleLinks took ${stopwatch.elapsedMilliseconds}ms');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return List<String>.from(data['links'] ?? []);
       }
     } catch (e) {
-      print('Error fetching article links via Backend: $e');
+      print('ERROR: fetchArticleLinks failed after ${stopwatch.elapsedMilliseconds}ms: $e');
     }
     return [];
   }
@@ -40,7 +55,7 @@ class ScrapingService {
           'url': articleUrl,
           'category': category,
         }),
-      );
+      ).timeout(const Duration(seconds: 60));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
